@@ -1,4 +1,3 @@
-
 'use server';
 
 import { redirect } from 'next/navigation';
@@ -54,6 +53,7 @@ export async function loginUser(data: LoginFormInputs): Promise<AuthResult> {
             default:
               return { success: false, message: 'Unknown user role for hardcoded user.' };
           }
+          // Fix: re-throw redirect error so Next.js handles it
           redirect(redirectTo); 
         }
         return { success: false, message: 'Invalid email or password.' };
@@ -99,6 +99,7 @@ export async function loginUser(data: LoginFormInputs): Promise<AuthResult> {
     redirect(redirectTo); 
 
   } catch (error) {
+    // Fix: re-throw redirect errors so Next.js handles them
     if (typeof error === 'object' && error !== null && (error as any).digest?.startsWith('NEXT_REDIRECT')) {
       throw error;
     }
