@@ -32,6 +32,10 @@ export async function loginUser(data: LoginFormInputs): Promise<AuthResult> {
     try {
       userCredential = await signInWithEmailAndPassword(auth, validatedData.email, validatedData.password);
     } catch (error: any) {
+      // Re-throw Next.js redirect errors so they are not caught as generic errors
+      if (typeof error === 'object' && error !== null && (error as any).digest?.startsWith('NEXT_REDIRECT')) {
+        throw error;
+      }
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         const hardcodedUser = hardcodedUsers.find(u => u.email === validatedData.email && u.password === validatedData.password);
         if (hardcodedUser) {
@@ -53,7 +57,6 @@ export async function loginUser(data: LoginFormInputs): Promise<AuthResult> {
             default:
               return { success: false, message: 'Unknown user role for hardcoded user.' };
           }
-          // Fix: re-throw redirect error so Next.js handles it
           redirect(redirectTo); 
         }
         return { success: false, message: 'Invalid email or password.' };
